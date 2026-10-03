@@ -10,7 +10,7 @@ A lightweight, privacy-first web utility to strip EXIF, C2PA, and other embedded
 - **Metadata Scrubbing:** Clears standard EXIF, IPTC, XMP, and Content Credentials (C2PA) by rasterizing pixel data into a fresh container.
 - **Batch Processing:** Drop multiple images at once. Download them individually or packaged together as a single ZIP archive.
 - **Automated Timestamp Naming:** Cleaned images are exported as PNG files named by generation timestamp (`YYYYMMDD_HHMMSS`).
-- **Zero Build Dependencies:** Built as a standalone HTML/CSS/JS file. Runs directly in any modern browser without node modules or build pipelines.
+- **Zero Build Dependencies:** Built as a standalone HTML/CSS/JS file (`index.html`). Runs directly in any modern browser without node modules or build pipelines.
 
 ---
 
