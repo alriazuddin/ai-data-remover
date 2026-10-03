@@ -28,5 +28,5 @@ Because the canvas re-encodes pure pixel data, any binary metadata chunks locate
 
 1. Clone or download this repository:
    ```bash
-   git clone [https://github.com/your-username/ai-data-remover.git](https://github.com/your-username/ai-data-remover.git)
+   git clone [https://github.com/alriazuddin/ai-data-remover.git](https://github.com/alriazuddin/ai-data-remover.git)
    cd ai-data-remover
