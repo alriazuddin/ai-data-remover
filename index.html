@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Data Remover | Secure Metadata Cleaner</title>
+  
+  <!-- Modern Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- JSZip Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 540px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 40px 32px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      border: 1px solid var(--border-color);
+    }
+
+    .header-text {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header-text h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .header-text p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 40px 20px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dropzone:hover, .dropzone.active {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .dropzone-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+      color: #94a3b8;
+    }
+
+    .dropzone h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 4px;
+    }
+
+    .dropzone p {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    #result-section {
+      display: none;
+      margin-top: 28px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 24px;
+    }
+
+    .status-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--success);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* Custom Scrollbar for Light Theme */
+    .file-list::-webkit-scrollbar { width: 6px; }
+    .file-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .file-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .file-thumb {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: #fff;
+    }
+
+    .file-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .file-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #334155;
+    }
+
+    .file-status {
+      font-size: 11px;
+      color: var(--success);
+    }
+
+    .btn-download-single {
+      padding: 8px 16px;
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .btn-download-single:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.2s;
+      display: none; /* Hidden by default */
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header-text">
+      <div class="badge">100% Local Processing</div>
+      <h1>AI Data Remover</h1>
+      <p>Securely strip C2PA, EXIF, and hidden tracking metadata from your images. No data is uploaded to any server.</p>
+    </div>
+
+    <div class="dropzone" id="drop-area" onclick="document.getElementById('file-input').click()">
+      <div class="dropzone-icon">📁</div>
+      <h3>Click or drag images here</h3>
+      <p>Supports JPG, PNG, WebP (Single or Bulk)</p>
+      <input type="file" id="file-input" accept="image/*" multiple style="display: none;" />
+    </div>
+
+    <div id="result-section">
+      <div class="status-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Processing Complete
+      </div>
+      
+      <div class="file-list" id="file-list">
+        <!-- Cleaned files will appear here -->
+      </div>
+      
+      <!-- Bulk Download Button -->
+      <button class="btn-primary" id="btn-zip-download">Download All as ZIP</button>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const dropArea = document.getElementById('drop-area');
+    const resultSection = document.getElementById('result-section');
+    const fileList = document.getElementById('file-list');
+    const btnZipDownload = document.getElementById('btn-zip-download');
+
+    let currentZip = null;
+
+    // File Input Change
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) processFiles(e.target.files);
+    });
+
+    // Drag and Drop Events
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.classList.add('active');
+    });
+    
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.classList.remove('active');
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('active');
+      if (e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
+    });
+
+    // Get Datetime format: YYYYMMDD_HHMMSS
+    function getDatetimeString() {
+      const now = new Date();
+      const pad = (n) => n.toString().padStart(2, '0');
+      const date = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+      const time = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      return `${date}_${time}`;
+    }
+
+    function processFiles(files) {
+      resultSection.style.display = 'block';
+      fileList.innerHTML = ''; 
+      btnZipDownload.style.display = 'none'; // Hide zip button initially
+      btnZipDownload.innerText = 'Download All as ZIP';
+
+      const totalFiles = files.length;
+      let processedCount = 0;
+      
+      // Initialize ZIP only if multiple files
+      if (totalFiles > 1) {
+        currentZip = new JSZip();
+      } else {
+        currentZip = null;
+      }
+
+      Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            canvas.toBlob((blob) => {
+              const datetimeStr = getDatetimeString();
+              const fileName = totalFiles > 1 ? `${datetimeStr}_${index + 1}.png` : `${datetimeStr}.png`; 
+              
+              // Create UI Element
+              createFileItem(fileName, blob, e.target.result);
+
+              // Add to ZIP if bulk upload
+              if (currentZip) {
+                currentZip.file(fileName, blob);
+              }
+
+              processedCount++;
+
+              // Show ZIP button ONLY if more than 1 file is uploaded and all are processed
+              if (totalFiles > 1 && processedCount === totalFiles) {
+                btnZipDownload.style.display = 'block';
+              }
+
+            }, 'image/png');
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      
+      fileInput.value = ''; // Reset input
+    }
+
+    function createFileItem(fileName, blob, imgSrc) {
+      const url = URL.createObjectURL(blob);
+
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'file-item';
+
+      const fileInfo = document.createElement('div');
+      fileInfo.className = 'file-info';
+
+      const thumb = document.createElement('img');
+      thumb.className = 'file-thumb';
+      thumb.src = imgSrc;
+
+      const details = document.createElement('div');
+      details.className = 'file-details';
+      
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'file-name';
+      nameSpan.innerText = fileName;
+
+      const statusSpan = document.createElement('span');
+      statusSpan.className = 'file-status';
+      statusSpan.innerText = 'Cleaned';
+
+      details.appendChild(nameSpan);
+      details.appendChild(statusSpan);
+      fileInfo.appendChild(thumb);
+      fileInfo.appendChild(details);
+
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'btn-download-single';
+      dlBtn.innerText = 'Download';
+      dlBtn.onclick = () => {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+      };
+
+      itemDiv.appendChild(fileInfo);
+      itemDiv.appendChild(dlBtn);
+      fileList.appendChild(itemDiv);
+    }
+
+    // ZIP Download Action
+    btnZipDownload.addEventListener('click', () => {
+      if(!currentZip) return;
+      
+      const originalText = btnZipDownload.innerText;
+      btnZipDownload.innerText = 'Zipping files...';
+      
+      currentZip.generateAsync({ type: "blob" }).then((content) => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = `Cleaned_Images_${getDatetimeString()}.zip`;
+        link.click();
+        
+        btnZipDownload.innerText = originalText;
+      });
+    });
+  </script>
+</body>
+</html>
